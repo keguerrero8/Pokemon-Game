@@ -1,4 +1,5 @@
-Pokemon game made with open ended requirements from Codecademy
+Pokemon game made in Python with open ended requirements from Codecademy.
+This is one of my first projects utilizing OOP and classes!
 
 -This game is a 2 player game run from the terminal
 -Player can select their pokemon choices at the beginning
@@ -13,3 +14,5 @@ Pokemon game made with open ended requirements from Codecademy
   -each time pokemon wins a fight, give them experience
   -each time pokemon reaches certain experience, they can evolve
   -create inheritence classes with more pokemon from the Pokemon class
+	
+Let me know if there are any suggestions\feedback.  
