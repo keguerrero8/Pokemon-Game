@@ -259,7 +259,7 @@ while player1.all_pokemon_KO() == False and player2.all_pokemon_KO() == False:
     count += 1
 
 if player1.all_pokemon_KO() == True:
-    print("----------------------------------")
+    print("-----------------------------------")
     print("\nPlayer 1 is the victor!")
 else:
     print("----------------------------------")
