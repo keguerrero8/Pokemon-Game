@@ -1,9 +1,5 @@
 import sys
 #known bugs to resolve in future iterations--
-#-when pokemon is knocked out, trainer cannot reselect it.  Currently, this will just waste the players turn
-#-when pokemon is knocked out, trainer cannot attack it.  Currently, this will waste the players turn
-#-need to create logic so that a trainer can only use a potion based on how much is in his/her inventory
-#when a pokemon is knocked out, need to implement logic so that the trainer needs to select a new pokemon
 
 #known improvements and features to implement--
 #each time pokemon wins a fight, give them experience
@@ -36,11 +32,10 @@ class Pokemon:
         return self.damage
 
     def regain_health(self, hp_boost):
-        health_before = self.current_health
+        # health_before = self.current_health
         self.current_health += hp_boost
         if self.current_health > self.max_health:
             self.current_health = self.max_health
-        #print("{} is gaining {} hp".format(self.name, self.current_health-health_before))
         return self.current_health
 
     def lose_health(self, damage):
@@ -78,16 +73,19 @@ class Trainer:
         else:
             self.pokemons = pokemons  #this will be a list of all pokemon you choose
 
-    def choose_pokemon(self, pokemon):
+    def choose_pokemon(self, pokemon): 
         if pokemon.knocked_out == True:
             print("\n{} has been knocked and cannot be chosen, please choose another pokemon".format(pokemon.name))
             return None
+        elif pokemon not in self.pokemons:
+            print("\n{} is not available, please choose another pokemon".format(pokemon.name))
+            return None           
         else:
             self.current_pokemon = pokemon
             print("\n{} has chosen {}".format(self.name, self.current_pokemon.name))
             return self.current_pokemon
 
-    def use_potion(self):
+    def use_potion(self): 
         if self.current_pokemon.knocked_out == True:
             print("\n{} has been knocked and cannot regain health!".format(self.current_pokemon.name))
             return None
@@ -111,7 +109,18 @@ class Trainer:
         return True
 
 #create pokemon relationships
-type_relations = {"Fire" : ["Grass", "Steel", "Ice"], "Water" : ["Fire", "Rock", "Ice"], "Grass" : ["Water", "Rock"], "Electric" : ["Water", "Flying", "Normal"], "Rock" : ["Electric", "Flying"], "Flying" : ["Grass", "Fighting"], "Fighting" : ["Rock", "Normal"], "Steel" : ["Rock", "Ice"], "Ice" : ["Grass", "Flying"], "Normal":["Normal"]}
+type_relations = {
+    "Fire" : ["Grass", "Steel", "Ice"], 
+    "Water" : ["Fire", "Rock", "Ice"], 
+    "Grass" : ["Water", "Rock"], 
+    "Electric" : ["Water", "Flying", "Normal"], 
+    "Rock" : ["Electric", "Flying"], 
+    "Flying" : ["Grass", "Fighting"], 
+    "Fighting" : ["Rock", "Normal"], 
+    "Steel" : ["Rock", "Ice"], 
+    "Ice" : ["Grass", "Flying"], 
+    "Normal":["Normal"]
+    }
 #create pokemons - we can create inherited classes after initial implementation
 charmander = Pokemon("Charmander", 1, "Fire")
 squirtle = Pokemon("Squirtle", 1, "Water")
@@ -138,29 +147,55 @@ def str_to_class(str): #method to change string to class object
 
 #allow players to choose up to number_of_pokemon
 number_of_pokemon = 2 #can be 6 but we'll start with letting them choose 3 pokemon
-while len(player1_pokemon) < number_of_pokemon: 
-    chosen_pokemon = input("\nPlayer 1: choose from the following pokemon and enter the name:\n\n {}\n\n".format([pokemon.name for pokemon in available_pokemon]))
-    class_chosen_pokemon = str_to_class(chosen_pokemon.lower())
-    player1_pokemon.append(class_chosen_pokemon)
-    available_pokemon.remove(class_chosen_pokemon)
+count = 0
+while count < number_of_pokemon*2:
+    if count%2==0:
+        player_string = "Player 1" 
+        player = player1_pokemon
+    else:
+        player_string = "Player 2" 
+        player = player2_pokemon     
 
-    chosen_pokemon = input("\nPlayer 2: choose from the following pokemon and enter the name:\n\n {}\n\n".format([pokemon.name for pokemon in available_pokemon]))
-    class_chosen_pokemon = str_to_class(chosen_pokemon.lower())
-    player2_pokemon.append(class_chosen_pokemon)
-    available_pokemon.remove(class_chosen_pokemon)
+    try:
+        print("----------------------------------")   
+        chosen_pokemon = input("\n{}: choose from the following pokemon and enter the name:\n\n {}\n\n".format(player_string, [pokemon.name for pokemon in available_pokemon]))
+        class_chosen_pokemon = str_to_class(chosen_pokemon.lower())
+        player.append(class_chosen_pokemon)
+        available_pokemon.remove(class_chosen_pokemon)
+        count += 1
+    except AttributeError:
+        print("----------------------------------")
+        print("\nInvalid pokemon choice, please try again\n")
+
 
 player1 = Trainer("Player 1", player1_pokemon)
 player2 = Trainer("Player 2", player2_pokemon)
 
 
-#let each player select their starting pokemon
-chosen_pokemon = input("\nPlayer 1, Choose your pokemon by entering their name:\n\n {}\n\n".format([pokemon.name for pokemon in player1_pokemon]))
-class_chosen_pokemon = str_to_class(chosen_pokemon.lower())
-player1.choose_pokemon(class_chosen_pokemon)
+#let each player select their starting pokemon - need to fix case where opposing player chooses the same players pokemon
+invalid_choice = True
+count = 0
+while count < 2:
+    if count%2==0:
+        player_string = "Player 1" 
+        player = player1
+        player_pokemon = player1_pokemon
+    else:
+        player_string = "Player 2" 
+        player = player2
+        player_pokemon = player2_pokemon 
+    print("----------------------------------")
+    try:
+        chosen_pokemon = input("\n{}, Choose your pokemon by entering their name:\n\n {}\n\n".format(player_string, [pokemon.name for pokemon in player_pokemon]))
+        class_chosen_pokemon = str_to_class(chosen_pokemon.lower())
+        # player.choose_pokemon(class_chosen_pokemon)
+        # count += 1
+        if player.choose_pokemon(class_chosen_pokemon) != None:
+            count += 1
+    except AttributeError:
+        print("----------------------------------")
+        print("\nInvalid pokemon choice, please try again\n")       
 
-chosen_pokemon = input("\nPlayer 2, Choose your pokemon by entering their name:\n\n {}\n\n".format([pokemon.name for pokemon in player2_pokemon]))
-class_chosen_pokemon = str_to_class(chosen_pokemon.lower())
-player2.choose_pokemon(class_chosen_pokemon)
 
 #player1 and player2 will alternate in turns until one player has all their pokemon knocked out, starting with player1
 count = 0
@@ -172,31 +207,64 @@ while player1.all_pokemon_KO() == False and player2.all_pokemon_KO() == False:
     else:
         current_player = player2
         opposing_player = player1
-        current_player_string = "Player2"       
+        current_player_string = "Player2"
+
+    print("----------------------------------")           
     print("\n{}'s turn\n".format(current_player_string))
     invalid_choice = True
     while invalid_choice == True:
-        choice = input("\nWhat would you like to do? Input number for choice:\n[1] Attack opposing pokemon\n[2] Use potion on current pokemon\n[3] Switch Pokemon\n")
-        if choice == "1":
-            current_player.attack_other_trainer(opposing_player)
-            invalid_choice = False
-        elif choice == "2":
-            current_player.use_potion()
-            invalid_choice = False
-        elif choice == "3":
-            switch_pokemon = input("\nWhich Pokemon would you like to switch in (enter name):\n\n {}\n\n".format([pokemon.name for pokemon in current_player.pokemons]))
-            switch_pokemon = str_to_class(switch_pokemon.lower())
-            while current_player.choose_pokemon(switch_pokemon) == None: #if player chose a pokemon that is knocked out, ask them to choose again until they pick one that isnt knocked out
-                switch_pokemon = input("\nWhich Pokemon would you like to switch in (enter name):\n\n {}\n\n".format([pokemon.name for pokemon in current_player.pokemons]))
+        if current_player.current_pokemon.knocked_out == True:
+            print("----------------------------------")
+            print("\n{} is knocked out\n".format(current_player.current_pokemon.name))
+            print("----------------------------------")
+            try:
+                switch_pokemon = input("\nWhich Pokemon would you like to switch in (enter name)? :\n\n {}\n\n".format([pokemon.name for pokemon in current_player.pokemons]))
                 switch_pokemon = str_to_class(switch_pokemon.lower())
-            invalid_choice = False
+                if current_player.choose_pokemon(switch_pokemon) == None:
+                    invalid_choice = True
+                else:
+                    invalid_choice = False
+            except AttributeError:
+                print("----------------------------------")
+                print("\nInvalid pokemon choice, please try again\n")
+                invalid_choice = True                
         else:
-            print("\nInvalid choice, please select again")
+            print("----------------------------------")
+            choice = input("\nWhat would you like to do? Input number for choice:\n[1] Attack opposing pokemon\n[2] Use potion on current pokemon\n[3] Switch Pokemon\n\n")
+            if choice == "1":
+                current_player.attack_other_trainer(opposing_player)
+                invalid_choice = False
+            elif choice == "2": 
+                if current_player.potions == 0:
+                    print("----------------------------------")
+                    print("No more potions remaining, please select another choice")
+                    invalid_choice = True
+                else:
+                    current_player.use_potion()
+                    invalid_choice = False
+            elif choice == "3":
+                print("----------------------------------")
+                try:
+                    switch_pokemon = input("\nWhich Pokemon would you like to switch in (enter name)? :\n\n {}\n\n".format([pokemon.name for pokemon in current_player.pokemons]))
+                    switch_pokemon = str_to_class(switch_pokemon.lower())
+                    if current_player.choose_pokemon(switch_pokemon) == None:
+                        invalid_choice = True
+                    else:
+                        invalid_choice = False
+                except AttributeError:
+                    print("----------------------------------")
+                    print("\nInvalid pokemon choice, please try again\n")
+                    invalid_choice = True                                    
+            else:
+                print("----------------------------------")
+                print("\nInvalid choice, please select again")
     count += 1
 
 if player1.all_pokemon_KO() == True:
+    print("----------------------------------")
     print("\nPlayer 1 is the victor!")
 else:
+    print("----------------------------------")
     print("\nPlayer 2 is the victor!")
 
 
