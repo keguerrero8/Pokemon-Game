@@ -120,7 +120,7 @@ type_relations = {
     "Steel" : ["Rock", "Ice"], 
     "Ice" : ["Grass", "Flying"], 
     "Normal":["Normal"]
-    }
+}
 #create pokemons - we can create inherited classes after initial implementation
 charmander = Pokemon("Charmander", 1, "Fire")
 squirtle = Pokemon("Squirtle", 1, "Water")
@@ -146,7 +146,7 @@ def str_to_class(str): #method to change string to class object
     return getattr(sys.modules[__name__], str)
 
 #allow players to choose up to number_of_pokemon
-number_of_pokemon = 2 #can be 6 but we'll start with letting them choose 3 pokemon
+number_of_pokemon = 3 #can be 6 but we'll start with letting them choose 3 pokemon
 count = 0
 while count < number_of_pokemon*2:
     if count%2==0:
@@ -171,8 +171,6 @@ while count < number_of_pokemon*2:
 player1 = Trainer("Player 1", player1_pokemon)
 player2 = Trainer("Player 2", player2_pokemon)
 
-
-#let each player select their starting pokemon - need to fix case where opposing player chooses the same players pokemon
 invalid_choice = True
 count = 0
 while count < 2:
